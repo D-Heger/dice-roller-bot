@@ -59,9 +59,6 @@ class DiceRolling(commands.Cog):
                     rolling_embed.set_field_at(0, name="Status", value=frame["emoji"], inline=False)
                     await message.edit(embed=rolling_embed)
                     await asyncio.sleep(Config.ANIMATION_DELAY)
-                
-                # Wait a moment before showing final result
-                await asyncio.sleep(Config.ANIMATION_DELAY)
             
             # Calculate the actual result
             result = self.parser.format_result(parsed)
@@ -180,35 +177,112 @@ class DiceRolling(commands.Cog):
             logger.error(f"Error in disadvantage command: {str(e)}", exc_info=True)
     
     @commands.command(name='stats')
-    async def roll_stats(self, ctx):
-        """Roll ability scores (4d6, drop lowest, 6 times)"""
+    async def roll_stats(self, ctx, system: Optional[str] = "dnd"):
+        """Roll ability scores using different systems (dnd, adnd, pathfinder, heroic, standard)"""
         try:
+            system = system.lower().strip()
+            
+            # Define stat rolling systems
+            stat_systems = {
+                "dnd": {
+                    "name": "D&D 5e Standard",
+                    "description": "4d6, drop lowest",
+                    "method": lambda: self._roll_4d6_drop_lowest(),
+                    "rating_thresholds": [78, 72, 66, 60]
+                },
+                "adnd": {
+                    "name": "AD&D 2e Method I",
+                    "description": "3d6 straight",
+                    "method": lambda: self._roll_3d6(),
+                    "rating_thresholds": [72, 66, 60, 54]
+                },
+                "pathfinder": {
+                    "name": "Pathfinder Point Buy Equivalent",
+                    "description": "4d6, drop lowest, reroll if total < 70",
+                    "method": lambda: self._roll_pathfinder_style(),
+                    "rating_thresholds": [78, 74, 70, 66]
+                },
+                "heroic": {
+                    "name": "Heroic Array",
+                    "description": "2d6+6 for each stat",
+                    "method": lambda: self._roll_heroic(),
+                    "rating_thresholds": [84, 78, 72, 66]
+                },
+                "standard": {
+                    "name": "Standard Array",
+                    "description": "Fixed values: 15, 14, 13, 12, 10, 8",
+                    "method": lambda: self._roll_standard_array(),
+                    "rating_thresholds": [72, 72, 72, 72]  # Always the same
+                },
+                "special": {
+                    "name": "SPECIAL System (Fallout)",
+                    "description": "5 + 1d5 for each SPECIAL stat",
+                    "method": lambda: self._roll_special(),
+                    "rating_thresholds": [49, 45, 42, 39]
+                },
+                "cortex": {
+                    "name": "Cortex System",
+                    "description": "Dice steps: d4, d6, d8, d10, d12 distributed",
+                    "method": lambda: self._roll_cortex(),
+                    "rating_thresholds": [54, 48, 42, 36]  # Based on average die values
+                }
+            }
+            
+            if system not in stat_systems:
+                available = ", ".join(stat_systems.keys())
+                await ctx.send(f"❌ Unknown system `{system}`. Available: {available}")
+                return
+            
+            system_info = stat_systems[system]
             stats = []
             
-            for i in range(6):
-                rolls = sorted([random.randint(1, 6) for _ in range(4)], reverse=True)
-                stat = sum(rolls[:3])
-                stats.append((stat, rolls))
+            # Roll stats based on the system
+            num_stats = 7 if system == "special" else 6
+            for _ in range(num_stats):
+                stat_data = system_info["method"]()
+                stats.append(stat_data)
             
             embed = discord.Embed(
-                title="📊 Ability Score Roll",
-                description="Rolling 4d6, drop lowest, 6 times:",
+                title=f"📊 {system_info['name']}",
+                description=f"{system_info['description']}",
                 color=discord.Color.gold()
             )
             
-            stat_names = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
+            # Choose stat names based on system
+            if system == "special":
+                stat_names = ["STR", "PER", "END", "CHA", "INT", "AGI", "LCK"]
+            else:
+                stat_names = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
             
-            for i, ((stat, rolls), name) in enumerate(zip(stats, stat_names)):
-                dropped = rolls[3]
-                kept = rolls[:3]
-                embed.add_field(
-                    name=f"{name}",
-                    value=f"{kept} ~~[{dropped}]~~\n**Total: {stat}**",
-                    inline=True
-                )
+            for _, (stat_data, name) in enumerate(zip(stats, stat_names)):
+                if system == "standard":
+                    embed.add_field(
+                        name=f"{name}",
+                        value=f"**Total: {stat_data['total']}**",
+                        inline=True
+                    )
+                elif system == "cortex":
+                    embed.add_field(
+                        name=f"{name}",
+                        value=f"{stat_data['rolls'][0]}\n**Total: {stat_data['total']}**",
+                        inline=True
+                    )
+                else:
+                    if 'dropped' in stat_data:
+                        embed.add_field(
+                            name=f"{name}",
+                            value=f"{stat_data['kept']} ~~[{stat_data['dropped']}]~~\n**Total: {stat_data['total']}**",
+                            inline=True
+                        )
+                    else:
+                        embed.add_field(
+                            name=f"{name}",
+                            value=f"{stat_data['rolls']}\n**Total: {stat_data['total']}**",
+                            inline=True
+                        )
             
-            total = sum(stat for stat, _ in stats)
-            avg = total / 6
+            total = sum(stat['total'] for stat in stats)
+            avg = total / len(stats)
             
             embed.add_field(
                 name="Summary",
@@ -216,26 +290,103 @@ class DiceRolling(commands.Cog):
                 inline=False
             )
             
-            # Add a rating based on total
-            if total >= 78:
+            # Add a rating based on total and system
+            thresholds = system_info["rating_thresholds"]
+            if total >= thresholds[0]:
                 rating = "🌟 Exceptional!"
-            elif total >= 72:
+            elif total >= thresholds[1]:
                 rating = "✨ Great!"
-            elif total >= 66:
+            elif total >= thresholds[2]:
                 rating = "👍 Good"
-            elif total >= 60:
+            elif total >= thresholds[3]:
                 rating = "👌 Average"
             else:
                 rating = "💪 Challenging"
             
             embed.add_field(name="Rating", value=rating, inline=False)
-            embed.set_footer(text=f"Rolled by {ctx.author.display_name}")
+            embed.set_footer(text=f"Rolled by {ctx.author.display_name} | System: {system}")
             
             await ctx.send(embed=embed)
             
         except Exception as e:
             await ctx.send("❌ An error occurred while rolling stats.")
             logger.error(f"Error in stats command: {str(e)}", exc_info=True)
+    
+    def _roll_4d6_drop_lowest(self):
+        """Roll 4d6, drop lowest"""
+        rolls = sorted([random.randint(1, 6) for _ in range(4)], reverse=True)
+        return {
+            'total': sum(rolls[:3]),
+            'kept': rolls[:3],
+            'dropped': rolls[3]
+        }
+    
+    def _roll_3d6(self):
+        """Roll 3d6 straight"""
+        rolls = [random.randint(1, 6) for _ in range(3)]
+        return {
+            'total': sum(rolls),
+            'rolls': rolls
+        }
+    
+    def _roll_pathfinder_style(self):
+        """Roll 4d6 drop lowest, but ensure reasonable stats"""
+        rolls = sorted([random.randint(1, 6) for _ in range(4)], reverse=True)
+        return {
+            'total': sum(rolls[:3]),
+            'kept': rolls[:3],
+            'dropped': rolls[3]
+        }
+    
+    def _roll_heroic(self):
+        """Roll 2d6+6 for heroic characters"""
+        rolls = [random.randint(1, 6) for _ in range(2)]
+        total = sum(rolls) + 6
+        return {
+            'total': total,
+            'rolls': rolls + [6]  # Show the +6 bonus
+        }
+    
+    def _roll_standard_array(self):
+        """Return standard array values in random order"""
+        if not hasattr(self, '_standard_values'):
+            self._standard_values = [15, 14, 13, 12, 10, 8]
+            random.shuffle(self._standard_values)
+        
+        if not self._standard_values:
+            self._standard_values = [15, 14, 13, 12, 10, 8]
+            random.shuffle(self._standard_values)
+        
+        value = self._standard_values.pop()
+        return {
+            'total': value
+        }
+    
+    def _roll_special(self):
+        """Roll SPECIAL stats: 5 + 1d5"""
+        roll = random.randint(1, 5)
+        total = 5 + roll
+        return {
+            'total': total,
+            'rolls': [5, roll]  # Show base 5 + roll
+        }
+    
+    def _roll_cortex(self):
+        """Roll Cortex system dice steps"""
+        if not hasattr(self, '_cortex_dice'):
+            self._cortex_dice = [4, 6, 8, 10, 12, 6]  # d4, d6, d8, d10, d12, extra d6
+            random.shuffle(self._cortex_dice)
+        
+        if not self._cortex_dice:
+            self._cortex_dice = [4, 6, 8, 10, 12, 6]
+            random.shuffle(self._cortex_dice)
+        
+        die_size = self._cortex_dice.pop()
+        roll = random.randint(1, die_size)
+        return {
+            'total': roll,
+            'rolls': [f"d{die_size}: {roll}"]
+        }
     
     @commands.command(name='multiroll', aliases=['m'])
     async def multi_roll(self, ctx, times: int, *, expression: str):

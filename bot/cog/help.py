@@ -60,7 +60,7 @@ class Help(commands.Cog):
                 "⚔️ D&D Specific": [
                     ("advantage [modifier]", "Roll with advantage", "adv"),
                     ("disadvantage [modifier]", "Roll with disadvantage", "dis"),
-                    ("stats", "Roll ability scores", None),
+                    ("stats [system]", "Roll ability scores (dnd, adnd, pathfinder, heroic, standard, special, cortex)", None),
                 ],
                 "❓ Help": [
                     ("help [command]", "Show this help or command details", "h"),
@@ -101,7 +101,9 @@ class Help(commands.Cog):
                     "`!roll 2d6+3` - Roll 2d6 and add 3\n"
                     "`!roll 1d8-2` - Roll 1d8 and subtract 2\n"
                     "`!adv +3` - Roll advantage with +3 modifier\n"
-                    "`!dis -1` - Roll disadvantage with -1 modifier"
+                    "`!dis -1` - Roll disadvantage with -1 modifier\n"
+                    "`!stats` - Roll D&D 5e ability scores\n"
+                    "`!stats pathfinder` - Roll Pathfinder ability scores"
                 ),
                 inline=False
             )
@@ -127,6 +129,21 @@ class Help(commands.Cog):
                     "`-3` - Negative modifier\n"
                     "`+0` - No modifier (explicit)\n"
                     "**Note:** Modifiers work with advantage/disadvantage too!"
+                ),
+                inline=False
+            )
+            
+            # Stat Systems
+            embed.add_field(
+                name="🎯 Stat Systems",
+                value=(
+                    "`!stats dnd` - D&D 5e (4d6 drop lowest)\n"
+                    "`!stats adnd` - AD&D 2e (3d6 straight)\n"
+                    "`!stats pathfinder` - Pathfinder style\n"
+                    "`!stats heroic` - Heroic (2d6+6)\n"
+                    "`!stats standard` - Standard array\n"
+                    "`!stats special` - SPECIAL (Fallout)\n"
+                    "`!stats cortex` - Cortex system dice"
                 ),
                 inline=False
             )

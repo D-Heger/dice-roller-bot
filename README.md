@@ -35,7 +35,7 @@ A feature-rich Discord bot for rolling dice in Dungeons & Dragons 5th Edition ga
 | `!roll [expression]` | Roll dice with modifiers | `!roll 1d20+5` |
 | `!advantage [modifier]` | Roll with advantage | `!adv +3` |
 | `!disadvantage [modifier]` | Roll with disadvantage | `!dis +2` |
-| `!stats` | Roll ability scores (4d6 drop lowest) | `!stats` |
+| `!stats [system]` | Roll ability scores with different systems | `!stats pathfinder` |
 | `!multiroll [times] [expr]` | Roll multiple times | `!m 6 4d6` |
 | `!help [command]` | Show help information | `!help roll` |
 
