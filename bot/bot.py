@@ -36,7 +36,7 @@ class DnDBot(commands.Bot):
     
     async def setup_hook(self):
         """Load cogs"""
-        cogs = ['bot.cog.dice_rolling', 'bot.cog.help']
+        cogs = ['bot.cog.dice_rolling', 'bot.cog.help', 'bot.cog.characters']
         
         # Load development cog if enabled
         if Config.ENABLE_DEV_COMMANDS:

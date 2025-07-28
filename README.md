@@ -10,13 +10,14 @@ A feature-rich Discord bot for rolling dice in Dungeons & Dragons 5th Edition ga
 
 ### Core Dice Rolling
 
-- **Flexible Dice Rolling**: Support for complex dice expressions (e.g., `2d20+1d6+5`)
-- **D&D Specific Rolls**: Advantage, disadvantage, and ability score generation
-- **Multi-rolling**: Roll the same expression multiple times
-- **Critical Detection**: Automatic detection of natural 20s and 1s on d20 rolls
-- **Animated Rolls**: Visual dice rolling animations with color cycling
-- **Beautiful Embeds**: Clean, colored embed messages for all rolls
-- **Error Handling**: Graceful error messages for invalid inputs
+ - **Flexible Dice Rolling**: Support for complex dice expressions (e.g., `2d20+1d6+5`)
+ - **D&D Specific Rolls**: Advantage, disadvantage, and ability score generation
+ - **Multi-rolling**: Roll the same expression multiple times
+ - **Critical Detection**: Automatic detection of natural 20s and 1s on d20 rolls
+ - **Animated Rolls**: Visual dice rolling animations with color cycling
+ - **Beautiful Embeds**: Clean, colored embed messages for all rolls
+ - **Error Handling**: Graceful error messages for invalid inputs
+ - **Character Management**: Multi-user character system with JSON persistence, rich backstories, notes, and support for multiple stat systems (D&D 5e, Pathfinder, SPECIAL, Cortex, and more)
 
 ### Developer Features 🔧
 
@@ -38,6 +39,29 @@ A feature-rich Discord bot for rolling dice in Dungeons & Dragons 5th Edition ga
 | `!stats [system]` | Roll ability scores with different systems | `!stats pathfinder` |
 | `!multiroll [times] [expr]` | Roll multiple times | `!m 6 4d6` |
 | `!help [command]` | Show help information | `!help roll` |
+| `!examples` | Show usage examples for commands | `!examples` |
+
+### Character Management Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `!char [name]` | View character or list all characters | `!char Gandalf` |
+| `!char create <name> [role]` | Create a new character | `!char create "Gandalf" Wizard` |
+| `!char list [user]` | List characters for user | `!char list @user` |
+| `!char delete <name>` | Delete a character | `!char delete Gandalf` |
+| `!char modify <subcommand>` | Modify character properties | See below |
+| `!char backstory <name> [story]` | Set/view character backstory | `!char backstory Gandalf "A wise wizard..."` |
+| `!char note <name> <text>` | Add a note to character | `!char note Gandalf "Learned new spell"` |
+| `!char notes <name> [page]` | View character notes | `!char notes Gandalf 2` |
+
+#### Character Modification Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `!char modify name <old> <new>` | Change character name | `!char modify name Gandalf "Gandalf the Grey"` |
+| `!char modify nickname <name> <nick>` | Set character nickname | `!char modify nickname Gandalf "Grey"` |
+| `!char modify role <name> <role>` | Change character role | `!char modify role Gandalf "Wizard of the White Council"` |
+| `!char modify system <name> <system> [yes/no]` | Change stat system | `!char modify system Gandalf pathfinder yes` |
 
 ### Developer Commands (when `ENABLE_DEV_COMMANDS=true`)
 

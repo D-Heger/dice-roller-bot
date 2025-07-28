@@ -62,8 +62,19 @@ class Help(commands.Cog):
                     ("disadvantage [modifier]", "Roll with disadvantage", "dis"),
                     ("stats [system]", "Roll ability scores (dnd, adnd, pathfinder, heroic, standard, special, cortex)", None),
                 ],
+                "🎭 Character Manager": [
+                    ("char [name]", "View character or list all characters", None),
+                    ("char create <name> [role]", "Create a new character", None),
+                    ("char modify <subcommand>", "Modify character (name, nickname, role, system)", None),
+                    ("char backstory <name> [story]", "Set or view character backstory", None),
+                    ("char note <name> <text>", "Add a note to character", None),
+                    ("char notes <name>", "View all notes", None),
+                    ("char clearnotes <name>", "Clear all notes", None),
+                    ("char delete <name>", "Delete a character", None),
+                ],
                 "❓ Help": [
                     ("help [command]", "Show this help or command details", "h"),
+                    ("examples", "Show usage examples for commands", "ex"),
                 ],
             }
             
@@ -93,76 +104,99 @@ class Help(commands.Cog):
                     inline=False
                 )
             
-            # Basic examples
-            embed.add_field(
-                name="📝 Basic Examples",
-                value=(
-                    "`!roll 1d20+5` - Roll a d20 with +5 modifier\n"
-                    "`!roll 2d6+3` - Roll 2d6 and add 3\n"
-                    "`!roll 1d8-2` - Roll 1d8 and subtract 2\n"
-                    "`!adv +3` - Roll advantage with +3 modifier\n"
-                    "`!dis -1` - Roll disadvantage with -1 modifier\n"
-                    "`!stats` - Roll D&D 5e ability scores\n"
-                    "`!stats pathfinder` - Roll Pathfinder ability scores"
-                ),
-                inline=False
-            )
-            
-            # Advanced dice expressions
-            embed.add_field(
-                name="🎯 Advanced Expressions",
-                value=(
-                    "`!roll 2d6+1d4+2` - Multiple dice types with modifier\n"
-                    "`!roll 3d8+2d6+5` - Complex damage roll\n"
-                    "`!roll 1d100` - Percentile dice roll\n"
-                    "`!m 6 4d6` - Roll 4d6 six times (for stats)\n"
-                    "`!m 3 1d20+5` - Roll attack 3 times"
-                ),
-                inline=False
-            )
-            
-            # Modifier examples
-            embed.add_field(
-                name="⚖️ Modifier Formats",
-                value=(
-                    "`+5` or `5` - Positive modifier\n"
-                    "`-3` - Negative modifier\n"
-                    "`+0` - No modifier (explicit)\n"
-                    "**Note:** Modifiers work with advantage/disadvantage too!"
-                ),
-                inline=False
-            )
-            
-            # Stat Systems
-            embed.add_field(
-                name="🎯 Stat Systems",
-                value=(
-                    "`!stats dnd` - D&D 5e (4d6 drop lowest)\n"
-                    "`!stats adnd` - AD&D 2e (3d6 straight)\n"
-                    "`!stats pathfinder` - Pathfinder style\n"
-                    "`!stats heroic` - Heroic (2d6+6)\n"
-                    "`!stats standard` - Standard array\n"
-                    "`!stats special` - SPECIAL (Fallout)\n"
-                    "`!stats cortex` - Cortex system dice"
-                ),
-                inline=False
-            )
-            
-            # Expression format explanation
-            embed.add_field(
-                name="🔢 Expression Format",
-                value=(
-                    "`NdS±M` - Roll N dice with S sides, add/subtract M\n"
-                    "• **N** = Number of dice (1-100)\n"
-                    "• **S** = Sides per die (2-1000)\n"
-                    "• **±M** = Modifier to add/subtract\n"
-                    "• Can chain multiple dice: `1d20+2d6+3`"
-                ),
-                inline=False
-            )
-            
-            embed.set_footer(text=f"Prefix: {self.bot.command_prefix} | Use !help [command] for more info")
+            embed.set_footer(text=f"Prefix: {self.bot.command_prefix}\n Use !help [command] for more info\n Use !examples for usage examples")
             await ctx.send(embed=embed)
+
+    @commands.command(name='examples', aliases=['ex'])
+    async def examples(self, ctx,):
+        """Show usage examples for commands"""
+        
+        embed = discord.Embed(
+            title="Usage Examples",
+            description="Here are some examples of how to use the commands:",
+            color=discord.Color.green()
+        )
+        
+        # Basic examples
+        embed.add_field(
+            name="📝 Basic Examples",
+            value=(
+                "`!roll 1d20+5` - Roll a d20 with +5 modifier\n"
+                "`!roll 2d6+3` - Roll 2d6 and add 3\n"
+                "`!roll 1d8-2` - Roll 1d8 and subtract 2\n"
+                "`!adv +3` - Roll advantage with +3 modifier\n"
+                "`!dis -1` - Roll disadvantage with -1 modifier\n"
+                "`!stats` - Roll D&D 5e ability scores\n"
+                "`!stats pathfinder` - Roll Pathfinder ability scores"
+            ),
+            inline=False
+        )
+        
+        # Advanced dice expressions
+        embed.add_field(
+            name="🎯 Advanced Expressions",
+            value=(
+                "`!roll 2d6+1d4+2` - Multiple dice types with modifier\n"
+                "`!roll 3d8+2d6+5` - Complex damage roll\n"
+                "`!roll 1d100` - Percentile dice roll\n"
+                "`!m 6 4d6` - Roll 4d6 six times (for stats)\n"
+                "`!m 3 1d20+5` - Roll attack 3 times"
+            ),
+            inline=False
+        )
+        
+        # Modifier examples
+        embed.add_field(
+            name="⚖️ Modifier Formats",
+            value=(
+                "`+5` or `5` - Positive modifier\n"
+                "`-3` - Negative modifier\n"
+                "`+0` - No modifier (explicit)\n"
+                "**Note:** Modifiers work with advantage/disadvantage too!"
+            ),
+            inline=False
+        )
+        
+        # Stat Systems
+        embed.add_field(
+            name="🎯 Stat Systems",
+            value=(
+                "`!stats dnd` - D&D 5e (4d6 drop lowest)\n"
+                "`!stats adnd` - AD&D 2e (3d6 straight)\n"
+                "`!stats pathfinder` - Pathfinder style\n"
+                "`!stats heroic` - Heroic (2d6+6)\n"
+                "`!stats standard` - Standard array\n"
+                "`!stats special` - SPECIAL (Fallout)\n"
+                "`!stats cortex` - Cortex system dice"
+            ),
+            inline=False
+        )
+        # Character Management System
+        embed.add_field(
+            name="🎭 Character Management",
+            value=(
+                "`!char create Gandalf Wizard` - Create character\n"
+                "`!char Gandalf` - View character details\n"
+                "`!char list` - List all characters\n"
+                "`!char delete Gandalf` - Delete character\n"
+                "`!char modify nickname Gandalf The Grey` - Sets Gandalf's nickname to 'The Grey'"
+            ),
+            inline=False
+        )
+        # Expression format explanation
+        embed.add_field(
+            name="🔢 Expression Format",
+            value=(
+                "`NdS±M` - Roll N dice with S sides, add/subtract M\n"
+                "• **N** = Number of dice (1-100)\n"
+                "• **S** = Sides per die (2-1000)\n"
+                "• **±M** = Modifier to add/subtract\n"
+                "• Can chain multiple dice: `1d20+2d6+3`"
+            ),
+            inline=False
+        )
+    
+        await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Help(bot))
