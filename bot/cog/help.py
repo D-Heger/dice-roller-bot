@@ -1,5 +1,11 @@
 import discord
 from discord.ext import commands
+import sys
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.append(str(Path(__file__).parent.parent.parent))
+from config.config import Config
 
 class Help(commands.Cog):
     """Custom help command"""
@@ -58,8 +64,20 @@ class Help(commands.Cog):
                 ],
                 "❓ Help": [
                     ("help [command]", "Show this help or command details", "h"),
-                ]
+                ],
             }
+            
+            # Add developer commands if enabled
+            if Config.ENABLE_DEV_COMMANDS:
+                categories["🔧 Developer"] = [
+                    ("reload [cog]", "Reload cog(s) for development", None),
+                    ("load [cog]", "Load a cog", None),
+                    ("unload [cog]", "Unload a cog", None),
+                    ("listcogs", "List all loaded cogs", None),
+                    ("sync", "Sync slash commands", None),
+                    ("hotreload [on/off]", "Toggle automatic code reloading", None),
+                    ("watchstatus", "Show file watcher debug info", None),
+                ]
             
             for category, commands in categories.items():
                 value = []
@@ -75,13 +93,53 @@ class Help(commands.Cog):
                     inline=False
                 )
             
+            # Basic examples
             embed.add_field(
-                name="📝 Examples",
+                name="📝 Basic Examples",
                 value=(
                     "`!roll 1d20+5` - Roll a d20 with +5 modifier\n"
-                    "`!roll 2d6+1d4` - Roll 2d6 and 1d4\n"
-                    "`!adv +3` - Roll advantage with +3\n"
-                    "`!m 6 4d6k3` - Roll stats 6 times"
+                    "`!roll 2d6+3` - Roll 2d6 and add 3\n"
+                    "`!roll 1d8-2` - Roll 1d8 and subtract 2\n"
+                    "`!adv +3` - Roll advantage with +3 modifier\n"
+                    "`!dis -1` - Roll disadvantage with -1 modifier"
+                ),
+                inline=False
+            )
+            
+            # Advanced dice expressions
+            embed.add_field(
+                name="🎯 Advanced Expressions",
+                value=(
+                    "`!roll 2d6+1d4+2` - Multiple dice types with modifier\n"
+                    "`!roll 3d8+2d6+5` - Complex damage roll\n"
+                    "`!roll 1d100` - Percentile dice roll\n"
+                    "`!m 6 4d6` - Roll 4d6 six times (for stats)\n"
+                    "`!m 3 1d20+5` - Roll attack 3 times"
+                ),
+                inline=False
+            )
+            
+            # Modifier examples
+            embed.add_field(
+                name="⚖️ Modifier Formats",
+                value=(
+                    "`+5` or `5` - Positive modifier\n"
+                    "`-3` - Negative modifier\n"
+                    "`+0` - No modifier (explicit)\n"
+                    "**Note:** Modifiers work with advantage/disadvantage too!"
+                ),
+                inline=False
+            )
+            
+            # Expression format explanation
+            embed.add_field(
+                name="🔢 Expression Format",
+                value=(
+                    "`NdS±M` - Roll N dice with S sides, add/subtract M\n"
+                    "• **N** = Number of dice (1-100)\n"
+                    "• **S** = Sides per die (2-1000)\n"
+                    "• **±M** = Modifier to add/subtract\n"
+                    "• Can chain multiple dice: `1d20+2d6+3`"
                 ),
                 inline=False
             )

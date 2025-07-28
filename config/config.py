@@ -14,6 +14,14 @@ class Config:
     MAX_SIDES = int(os.getenv('MAX_SIDES', 1000))
     MAX_MULTIROLL = int(os.getenv('MAX_MULTIROLL', 10))
     
+    # Animation Configuration
+    ENABLE_ANIMATIONS = os.getenv('ENABLE_ANIMATIONS', 'true').lower() == 'true'
+    ANIMATION_DELAY = float(os.getenv('ANIMATION_DELAY', 0.2))
+    
+    # Development Configuration
+    ENABLE_DEV_COMMANDS = os.getenv('ENABLE_DEV_COMMANDS', 'false').lower() == 'true'
+    ENABLE_HOT_RELOAD = os.getenv('ENABLE_HOT_RELOAD', 'false').lower() == 'true'
+    
     # Logging
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
     

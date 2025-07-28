@@ -38,6 +38,10 @@ class DnDBot(commands.Bot):
         """Load cogs"""
         cogs = ['bot.cog.dice_rolling', 'bot.cog.help']
         
+        # Load development cog if enabled
+        if Config.ENABLE_DEV_COMMANDS:
+            cogs.append('bot.cog.dev')
+        
         for cog in cogs:
             try:
                 await self.load_extension(cog)

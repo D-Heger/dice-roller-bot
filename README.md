@@ -8,14 +8,27 @@ A feature-rich Discord bot for rolling dice in Dungeons & Dragons 5th Edition ga
 
 ## Features ✨
 
+### Core Dice Rolling
+
 - **Flexible Dice Rolling**: Support for complex dice expressions (e.g., `2d20+1d6+5`)
 - **D&D Specific Rolls**: Advantage, disadvantage, and ability score generation
 - **Multi-rolling**: Roll the same expression multiple times
-- **Critical Detection**: Automatic detection of natural 20s and 1s
+- **Critical Detection**: Automatic detection of natural 20s and 1s on d20 rolls
+- **Animated Rolls**: Visual dice rolling animations with color cycling
 - **Beautiful Embeds**: Clean, colored embed messages for all rolls
 - **Error Handling**: Graceful error messages for invalid inputs
 
+### Developer Features 🔧
+
+- **Hot Reload**: Live code reloading during development without bot restart
+- **File Watcher**: Automatic detection of code changes with auto-reload
+- **Cog Management**: Load, unload, and reload individual bot components
+- **Debug Commands**: Status monitoring and development utilities
+- **Configurable**: Enable/disable dev features via environment variables
+
 ## Commands 📝
+
+### Dice Rolling Commands
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -25,6 +38,18 @@ A feature-rich Discord bot for rolling dice in Dungeons & Dragons 5th Edition ga
 | `!stats` | Roll ability scores (4d6 drop lowest) | `!stats` |
 | `!multiroll [times] [expr]` | Roll multiple times | `!m 6 4d6` |
 | `!help [command]` | Show help information | `!help roll` |
+
+### Developer Commands (when `ENABLE_DEV_COMMANDS=true`)
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `!reload [cog]` | Reload specific cog or all cogs | `!reload dice_rolling` |
+| `!load [cog]` | Load a new cog | `!load dice_rolling` |
+| `!unload [cog]` | Unload a cog | `!unload dice_rolling` |
+| `!listcogs` | List all loaded cogs | `!listcogs` |
+| `!sync` | Sync slash commands | `!sync` |
+| `!hotreload [on/off]` | Toggle automatic code reloading | `!hotreload on` |
+| `!watchstatus` | Show file watcher debug info | `!watchstatus` |
 
 ### Command Aliases
 
@@ -80,14 +105,59 @@ A feature-rich Discord bot for rolling dice in Dungeons & Dragons 5th Edition ga
 
 All configuration is done through environment variables in the `.env` file:
 
+### Basic Configuration
+
 | Variable | Description | Default |
 |----------|-------------|---------|
-| DISCORD_TOKEN | Your bot's Discord token | Required |
+| DISCORD_TOKEN | Your bot's Discord token | **Required** |
 | BOT_PREFIX | Command prefix for the bot | `!` |
 | LOG_LEVEL | Logging level (DEBUG, INFO, WARNING, ERROR) | `INFO` |
+
+### Dice Rolling Configuration
+
+| Variable | Description | Default |
+|----------|-------------|---------|
 | MAX_DICE | Maximum number of dice per roll | `100` |
 | MAX_SIDES | Maximum sides per die | `1000` |
 | MAX_MULTIROLL | Maximum times for multiroll | `10` |
+
+### Animation Configuration
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| ENABLE_ANIMATIONS | Enable dice rolling animations | `true` |
+| ANIMATION_DELAY | Delay between animation frames (seconds) | `0.2` |
+
+### Development Configuration
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| ENABLE_DEV_COMMANDS | Enable developer commands | `false` |
+| ENABLE_HOT_RELOAD | Enable automatic file watching and reloading | `false` |
+
+### Example `.env` file
+
+```plaintext
+# Required
+DISCORD_TOKEN=your_bot_token_here
+
+# Optional customization
+BOT_PREFIX=!
+LOG_LEVEL=INFO
+
+# Dice limits
+MAX_DICE=100
+MAX_SIDES=1000
+MAX_MULTIROLL=10
+
+# Animation settings
+ENABLE_ANIMATIONS=true
+ANIMATION_DELAY=0.2
+
+# Development features (set to true for development)
+ENABLE_DEV_COMMANDS=false
+ENABLE_HOT_RELOAD=false
+```
 
 ## Development 🛠️
 
@@ -96,11 +166,52 @@ All configuration is done through environment variables in the `.env` file:
 ```plaintext
 dice-roller-bot/
 ├── bot/                 # Bot core functionality
-│   ├── cogs/           # Command groups
+│   ├── cog/            # Command groups (cogs)
+│   │   ├── dice_rolling.py  # Main dice rolling commands
+│   │   ├── help.py          # Help system
+│   │   └── dev.py           # Development commands
 │   └── utils/          # Utility functions
+│       └── dice_parser.py   # Dice expression parser
 ├── config/             # Configuration management
+│   └── config.py       # Environment variable handling
 └── main.py            # Entry point
 ```
+
+### Hot Reload Development Workflow
+
+1. **Enable development mode** in your `.env`:
+
+   ```plaintext
+   ENABLE_DEV_COMMANDS=true
+   ENABLE_HOT_RELOAD=true
+   ```
+
+2. **Start the bot** and use development commands:
+
+   ```bash
+   python main.py
+   ```
+
+3. **Available development commands**:
+   - `!hotreload on` - Enable automatic code reloading
+   - `!reload dice_rolling` - Manually reload a specific cog
+   - `!watchstatus` - Check file watcher status
+   - `!listcogs` - See all loaded cogs
+
+4. **Make changes** to any file in:
+   - `bot/cog/*.py` - Cogs will auto-reload
+   - `bot/utils/*.py` - Utility changes trigger cog reloads
+   - `config/*.py` - Config changes require bot restart
+
+5. **See changes instantly** - Modified cogs reload automatically, and the bot sends a notification in Discord when hot reload occurs.
+
+### Development Tips
+
+- **Hot reload** watches file modification times and automatically reloads changed cogs
+- **Manual reload** with `!reload` if you need more control
+- **File watcher** runs every 2 seconds when enabled
+- **Config changes** require a full bot restart to take effect
+- **Dev commands** are owner-only for security
 
 ### Adding New Commands
 
@@ -113,6 +224,28 @@ dice-roller-bot/
         """Load cogs"""
         cogs = ['bot.cog.dice_rolling', 'bot.cog.help', 'your.cog.name'] <- Add your cog here
    ```
+
+#### Temporary commands can be added as cogs. Follow these steps:
+
+1. Create a new cog in the `bot/cog/` directory:
+
+   ```python
+   import discord
+   from discord.ext import commands
+
+   class YourCog(commands.Cog):
+       def __init__(self, bot):
+           self.bot = bot
+       
+       @commands.command(name='yourcommand')
+       async def your_command(self, ctx):
+           await ctx.send("Hello from your new command!")
+
+   async def setup(bot):
+       await bot.add_cog(YourCog(bot))
+   ```
+
+2. The cog will be auto-loaded if hot reload is enabled, or use `!load your_cog`
 
 ## License 📄
 

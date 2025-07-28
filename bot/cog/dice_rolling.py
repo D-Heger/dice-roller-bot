@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import random
 import logging
+import asyncio
 from typing import Optional
 
 from ..utils.dice_parser import DiceParser
@@ -31,8 +32,41 @@ class DiceRolling(commands.Cog):
             if not parsed:
                 raise ValueError("Invalid dice expression")
             
+            # Create initial animation embed if animations are enabled
+            if Config.ENABLE_ANIMATIONS:
+                # Show rolling animation
+                rolling_embed = discord.Embed(
+                    title="🎲 Rolling Dice...",
+                    description=f"Rolling `{expression}`",
+                    color=discord.Color.orange()
+                )
+                rolling_embed.add_field(name="Status", value="...🎲...", inline=False)
+                message = await ctx.send(embed=rolling_embed)
+                
+                # Enhanced animation frames showing dice rolling
+                animation_frames = [
+                    {"emoji": "🎲💨", "color": discord.Color.orange()},
+                    {"emoji": "🎯🎲", "color": discord.Color.red()},
+                    {"emoji": "🎲⚡", "color": discord.Color.gold()},
+                    {"emoji": "🌟🎲", "color": discord.Color.green()},
+                    {"emoji": "🎲✨", "color": discord.Color.blue()},
+                    {"emoji": "💫🎲", "color": discord.Color.purple()},
+                ]
+                
+                # Animate for a few frames with proper timing
+                for frame in animation_frames:
+                    rolling_embed.colour = frame["color"]
+                    rolling_embed.set_field_at(0, name="Status", value=frame["emoji"], inline=False)
+                    await message.edit(embed=rolling_embed)
+                    await asyncio.sleep(Config.ANIMATION_DELAY)
+                
+                # Wait a moment before showing final result
+                await asyncio.sleep(Config.ANIMATION_DELAY)
+            
+            # Calculate the actual result
             result = self.parser.format_result(parsed)
             
+            # Create the final result embed
             embed = discord.Embed(
                 title="🎲 Dice Roll",
                 color=discord.Color.blue()
@@ -50,7 +84,12 @@ class DiceRolling(commands.Cog):
                         embed.add_field(name="💀 Critical Fail!", value="Natural 1!", inline=True)
             
             embed.set_footer(text=f"Rolled by {ctx.author.display_name}")
-            await ctx.send(embed=embed)
+            
+            # Update the message with final result if animation was shown, otherwise send new message
+            if Config.ENABLE_ANIMATIONS and 'message' in locals():
+                await message.edit(embed=embed)
+            else:
+                await ctx.send(embed=embed)
             
         except ValueError as e:
             await ctx.send(f"❌ Error: {str(e)}")
