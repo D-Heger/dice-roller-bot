@@ -271,6 +271,12 @@ dice-roller-bot/
 
 2. The cog will be auto-loaded if hot reload is enabled, or use `!load your_cog`
 
+## Known Issues 🐞
+
+- Sometimes the dice rolling animations may not flow smoothly and appear choppy.
+- Hot reload may not work perfectly with all changes; manual reloads may be required for some modifications.
+- Character cog is not fully tested and some features may not work as intended.
+
 ## License 📄
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
