@@ -58,7 +58,8 @@ class DiceRolling(commands.Cog):
                     rolling_embed.colour = frame["color"]
                     rolling_embed.set_field_at(0, name="Status", value=frame["emoji"], inline=False)
                     await message.edit(embed=rolling_embed)
-                    await asyncio.sleep(Config.ANIMATION_DELAY)
+                    if not frame is animation_frames[-1]:  # Don't sleep on the last frame
+                        await asyncio.sleep(Config.ANIMATION_DELAY)
             
             # Calculate the actual result
             result = self.parser.format_result(parsed)
