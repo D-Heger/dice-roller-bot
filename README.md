@@ -187,18 +187,18 @@ ENABLE_HOT_RELOAD=false
 
 ### Project Structure
 
-```plaintext
+```stylus
 dice-roller-bot/
-├── bot/                 # Bot core functionality
-│   ├── cog/            # Command groups (cogs)
+├── bot/                     # Bot core functionality
+│   ├── cog/                 # Command groups (cogs)
 │   │   ├── dice_rolling.py  # Main dice rolling commands
 │   │   ├── help.py          # Help system
 │   │   └── dev.py           # Development commands
-│   └── utils/          # Utility functions
+│   └── utils/               # Utility functions
 │       └── dice_parser.py   # Dice expression parser
-├── config/             # Configuration management
-│   └── config.py       # Environment variable handling
-└── main.py            # Entry point
+├── config/                  # Configuration management
+│   └── config.py            # Environment variable handling
+└── main.py                  # Entry point
 ```
 
 ### Hot Reload Development Workflow
