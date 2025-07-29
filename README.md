@@ -277,6 +277,10 @@ dice-roller-bot/
 - Hot reload may not work perfectly with all changes; manual reloads may be required for some modifications.
 - Character cog is not fully tested and some features may not work as intended.
 
+## Contributing 🤝
+
+Contributions are welcome! If you have suggestions or improvements, please open an issue or submit a pull request.
+
 ## License 📄
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
